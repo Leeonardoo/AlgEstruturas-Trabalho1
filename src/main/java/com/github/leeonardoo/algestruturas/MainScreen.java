@@ -2,7 +2,6 @@ package com.github.leeonardoo.algestruturas;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.Window.Type;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import java.awt.event.ActionListener;
@@ -13,31 +12,16 @@ import javax.swing.table.DefaultTableModel;
 
 public class MainScreen {
 
-	private JFrame frmTrabalhoN;
+	private JFrame frame;
 	private JTextPane statusTextArea;
 	private JTable tagsTable;
-
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					MainScreen window = new MainScreen();
-					window.frmTrabalhoN.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
 
 	/**
 	 * Create the application.
 	 */
 	public MainScreen() {
 		initialize();
+		frame.setVisible(true);
 	}
 
 	/**
@@ -53,14 +37,14 @@ public class MainScreen {
 				e.printStackTrace();
 			}
 		}
-		
-		frmTrabalhoN = new JFrame();
-		frmTrabalhoN.setTitle("Trabalho N1");
-		frmTrabalhoN.setBounds(100, 100, 450, 300);
-		frmTrabalhoN.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+		frame = new JFrame();
+		frame.setTitle("Trabalho N1");
+		frame.setBounds(100, 100, 450, 300);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		JLabel filePathInputLabel = new JLabel("Arquivo:");
-		
+
 		JTextField filePathInput = new JTextField();
 		filePathInput.setPreferredSize(new Dimension(7, 28));
 		filePathInput.setSize(new Dimension(0, 28));
@@ -69,31 +53,31 @@ public class MainScreen {
 		filePathInput.setAlignmentY(Component.TOP_ALIGNMENT);
 		filePathInput.setMargin(new Insets(3, 0, 2, 2));
 		filePathInput.setColumns(10);
-		
+
 		JButton analyzeFileButton = new JButton("Analisar");
 		analyzeFileButton.setPreferredSize(new Dimension(71, 28));
 		analyzeFileButton.setMinimumSize(new Dimension(71, 28));
 		analyzeFileButton.setMaximumSize(new Dimension(71, 28));
-		
+
 		statusTextArea = new JTextPane();
 		statusTextArea.setEditable(false);
-		
+
 		JButton selectFileButton = new JButton("");
 		selectFileButton.setSize(new Dimension(28, 28));
 		selectFileButton.setMinimumSize(new Dimension(28, 28));
 		selectFileButton.setMaximumSize(new Dimension(28, 28));
 		selectFileButton.setPreferredSize(new Dimension(28, 28));
-		
+
 		selectFileButton.setIcon(UIManager.getIcon("FileView.directoryIcon"));
-		
+
 		selectFileButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 			}
 		});
-		
+
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setOpaque(false);
-		GroupLayout groupLayout = new GroupLayout(frmTrabalhoN.getContentPane());
+		GroupLayout groupLayout = new GroupLayout(frame.getContentPane());
 		groupLayout.setHorizontalGroup(
 			groupLayout.createParallelGroup(Alignment.LEADING)
 				.addGroup(Alignment.TRAILING, groupLayout.createSequentialGroup()
@@ -127,7 +111,7 @@ public class MainScreen {
 					.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 107, Short.MAX_VALUE)
 					.addContainerGap())
 		);
-		
+
 		tagsTable = new JTable();
 		scrollPane.setViewportView(tagsTable);
 		tagsTable.setCellEditor(null);
@@ -147,6 +131,6 @@ public class MainScreen {
 			}
 		});
 		tagsTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-		frmTrabalhoN.getContentPane().setLayout(groupLayout);
+		frame.getContentPane().setLayout(groupLayout);
 	}
 }
