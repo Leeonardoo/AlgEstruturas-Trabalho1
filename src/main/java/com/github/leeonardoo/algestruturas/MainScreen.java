@@ -24,6 +24,8 @@ public class MainScreen {
 	private JButton analyzeFileButton;
 	private JButton selectFileButton;
 
+	private String lastDir;
+
     /**
      * Create the application.
      */
@@ -152,9 +154,13 @@ public class MainScreen {
 		JFileChooser fileChooser = new JFileChooser();
 		fileChooser.removeChoosableFileFilter(fileChooser.getAcceptAllFileFilter());
 		fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Arquivo HTML", "html"));
+		if (lastDir != null) {
+		    fileChooser.setCurrentDirectory(new File(lastDir));
+        }
 		int actionResult = fileChooser.showOpenDialog(frame.getParent());
 		if (actionResult == JFileChooser.APPROVE_OPTION) {
 		    File selectedFile = fileChooser.getSelectedFile();
+		    lastDir = selectedFile.getAbsoluteFile().getParent();
 		    filePathInput.setText(selectedFile.getAbsolutePath());
 			htmlParser.setHtmlFile(selectedFile);
 		}

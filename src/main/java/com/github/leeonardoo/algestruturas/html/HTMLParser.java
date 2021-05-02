@@ -38,11 +38,21 @@ public class HTMLParser {
                 StringBuilder tagBuilder = new StringBuilder();
 
                 //Maybe an opening tag was found @[i]
-                for (int j = i + 1; j < htmlChars.length; j++) {
+                openLoop:
+                for (int j = i + 1; j < htmlChars.length - 1; j++) {
                     if (htmlChars[j] != '/' && htmlChars[j] != ' ' && htmlChars[j] != '>') {
                         //Now we know it isn't a closing tag
                         tagBuilder.append(htmlChars[j]);
-                        System.out.println("Appending start from index " + j);
+                    } else if (htmlChars[j] == '/') {
+                        StringBuilder closeTagBuilder = new StringBuilder();
+                        for (int k = j + 1; k < htmlChars.length - 1; k++) {
+                            if (htmlChars[k] == '>') {
+                                onCloseTagFound(closeTagBuilder.toString());
+                                break openLoop;
+                            } else {
+                                closeTagBuilder.append(htmlChars[k]);
+                            }
+                        }
                     } else {
                         onOpenTagFound(tagBuilder.toString());
                         break;
@@ -54,5 +64,9 @@ public class HTMLParser {
 
     private void onOpenTagFound(String tag) {
         System.out.println("Open tag found: " + tag);
+    }
+
+    private void onCloseTagFound(String tag) {
+        System.out.println("Close tag found: " + tag);
     }
 }
