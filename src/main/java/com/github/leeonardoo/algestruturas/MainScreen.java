@@ -1,6 +1,7 @@
 package com.github.leeonardoo.algestruturas;
 
 import com.github.leeonardoo.algestruturas.html.HTMLParser;
+import com.github.leeonardoo.algestruturas.html.ParserCallback;
 
 import javax.swing.*;
 import javax.swing.GroupLayout.Alignment;
@@ -12,9 +13,9 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.io.File;
 
-public class MainScreen {
+public class MainScreen implements ParserCallback {
 
-	private final HTMLParser htmlParser = new HTMLParser();
+	private final HTMLParser htmlParser = new HTMLParser(this);
 
     private JFrame frame;
     private JTextPane statusTextArea;
@@ -170,4 +171,9 @@ public class MainScreen {
     	statusTextArea.setText("");
         tagsTable.setModel(new DefaultTableModel(new Object[][]{new String[]{}}, new String[]{}));
 	}
+
+    @Override
+    public void onError(String msg) {
+        statusTextArea.setText(msg);
+    }
 }

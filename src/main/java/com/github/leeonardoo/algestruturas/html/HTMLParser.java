@@ -8,9 +8,14 @@ import java.io.IOException;
 public class HTMLParser {
 
     private File htmlFile;
+    private final ParserCallback callback;
 
     //Tags that close with '/>' or doesn't ever close (i.e <img src="https://somewebsite.com/someimage.jpg">)
     private static final String[] singletonTags = {"meta", "base", "br", "col", "command", "embed", "hr", "img", "input", "link", "param", "source", "!DOCTYPE"};
+
+    public HTMLParser(ParserCallback callback) {
+        this.callback = callback;
+    }
 
     public void setHtmlFile(File newFile) {
         htmlFile = newFile;
@@ -25,12 +30,24 @@ public class HTMLParser {
             while ((str = reader.readLine()) != null) {
                 contentBuilder.append(str);
             }
+
             reader.close();
         } catch (IOException e) {
             e.printStackTrace();
+            callback.onError(e.getMessage());
+        } catch (NullPointerException e) {
+            callback.onError("Selecione um arquivo primeiro!");
         }
 
-        char[] htmlChars = contentBuilder.toString().toCharArray();
+        try {
+            handleString(contentBuilder.toString());
+        } catch (Exception e) {
+            callback.onError(e.getMessage());
+        }
+    }
+
+    private void handleString(String htmlText) {
+        char[] htmlChars = htmlText.toCharArray();
 
         for (int i = 0; i < htmlChars.length - 1; i++) {
             //Iterate for possible tags
@@ -56,14 +73,27 @@ public class HTMLParser {
                     } else {
                         String tag = tagBuilder.toString();
 
+                        boolean singletonFound = false;
+
                         for (String singletonTag : singletonTags) {
                             if (singletonTag.equals(tag)) {
-                                onSingletonCloseTagFound(tag);
-                                break openLoop;
+                                singletonFound = true;
+                                break;
                             }
                         }
 
                         onOpenTagFound(tagBuilder.toString());
+
+                        for (int l = j; l < htmlChars.length; l++) {
+                            if (l + 2 < htmlChars.length - 1 && (htmlChars[l + 1] == '/' && htmlChars[l + 2] == '>' || htmlChars[l + 1] == '>')) {
+                                if (singletonFound) {
+                                    onSingletonCloseTagFound(tag);
+                                } else {
+                                    //Error
+                                }
+                                break openLoop;
+                            }
+                        }
                         break;
                     }
                 }
@@ -73,7 +103,7 @@ public class HTMLParser {
 
     private void onOpenTagFound(String tag) {
         System.out.println("Open tag found: " + tag);
-    }
+
 
     private void onCloseTagFound(String tag) {
         System.out.println("Close tag found: " + tag);
