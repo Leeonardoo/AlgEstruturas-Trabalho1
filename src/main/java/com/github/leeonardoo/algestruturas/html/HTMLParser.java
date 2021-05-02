@@ -34,7 +34,7 @@ public class HTMLParser {
 
         for (int i = 0; i < htmlChars.length - 1; i++) {
             //Iterate for possible tags
-            if (htmlChars[i] == '<' && i + 1 < htmlChars.length - 1) {
+            if (htmlChars[i] == '<') {
                 StringBuilder tagBuilder = new StringBuilder();
 
                 //Maybe an opening tag was found @[i]
@@ -45,7 +45,7 @@ public class HTMLParser {
                         tagBuilder.append(htmlChars[j]);
                     } else if (htmlChars[j] == '/') {
                         StringBuilder closeTagBuilder = new StringBuilder();
-                        for (int k = j + 1; k < htmlChars.length - 1; k++) {
+                        for (int k = j + 1; k < htmlChars.length; k++) {
                             if (htmlChars[k] == '>') {
                                 onCloseTagFound(closeTagBuilder.toString());
                                 break openLoop;
@@ -54,6 +54,15 @@ public class HTMLParser {
                             }
                         }
                     } else {
+                        String tag = tagBuilder.toString();
+
+                        for (String singletonTag : singletonTags) {
+                            if (singletonTag.equals(tag)) {
+                                onSingletonCloseTagFound(tag);
+                                break openLoop;
+                            }
+                        }
+
                         onOpenTagFound(tagBuilder.toString());
                         break;
                     }
@@ -68,5 +77,9 @@ public class HTMLParser {
 
     private void onCloseTagFound(String tag) {
         System.out.println("Close tag found: " + tag);
+    }
+
+    private void onSingletonCloseTagFound(String tag) {
+        System.out.println("singleton Close tag found: " + tag);
     }
 }

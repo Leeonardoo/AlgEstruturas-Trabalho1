@@ -168,6 +168,6 @@ public class MainScreen {
 
 	private void clearView() {
     	statusTextArea.setText("");
-//    	tagsTable.setModel(); //TODO clear tagsTable
+        tagsTable.setModel(new DefaultTableModel(new Object[][]{new String[]{}}, new String[]{}));
 	}
 }
