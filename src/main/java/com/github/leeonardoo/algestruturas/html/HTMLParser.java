@@ -1,20 +1,16 @@
 package com.github.leeonardoo.algestruturas.html;
 
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.helpers.DefaultHandler;
-
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
-public class HTMLParser extends DefaultHandler {
+public class HTMLParser {
 
     private File htmlFile;
+
+    //Tags that close with '/>' or doesn't ever close (i.e <img src="https://somewebsite.com/someimage.jpg">)
+    private static final String[] singletonTags = {"meta", "base", "br", "col", "command", "embed", "hr", "img", "input", "link", "param", "source", "!DOCTYPE"};
 
     public void setHtmlFile(File newFile) {
         htmlFile = newFile;
@@ -34,65 +30,29 @@ public class HTMLParser extends DefaultHandler {
             e.printStackTrace();
         }
 
-        String htmlText = contentBuilder.toString();
-        System.out.println(htmlText);
+        char[] htmlChars = contentBuilder.toString().toCharArray();
 
-        SAXParserFactory parserFactory = SAXParserFactory.newInstance();
-        SAXParser parser;
+        for (int i = 0; i < htmlChars.length - 1; i++) {
+            //Iterate for possible tags
+            if (htmlChars[i] == '<' && i + 1 < htmlChars.length - 1) {
+                StringBuilder tagBuilder = new StringBuilder();
 
-        try {
-            parser = parserFactory.newSAXParser();
-
-            parser.parse(htmlFile, this);
-        } catch (Exception e) {
-            e.printStackTrace();
+                //Maybe an opening tag was found @[i]
+                for (int j = i + 1; j < htmlChars.length; j++) {
+                    if (htmlChars[j] != '/' && htmlChars[j] != ' ' && htmlChars[j] != '>') {
+                        //Now we know it isn't a closing tag
+                        tagBuilder.append(htmlChars[j]);
+                        System.out.println("Appending start from index " + j);
+                    } else {
+                        onOpenTagFound(tagBuilder.toString());
+                        break;
+                    }
+                }
+            }
         }
-
     }
 
-    @Override
-    public void startDocument() throws SAXException {
-        super.startDocument();
-        System.out.println("Start document");
-    }
-
-    @Override
-    public void endDocument() throws SAXException {
-        super.endDocument();
-        System.out.println("End document");
-    }
-
-    @Override
-    public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-        super.startElement(uri, localName, qName, attributes);
-        System.out.println("Found element start " + localName + " " + qName);
-    }
-
-    @Override
-    public void endElement(String uri, String localName, String qName) throws SAXException {
-        super.endElement(uri, localName, qName);
-        System.out.println("Found element end " + localName + " " + qName);
-    }
-
-    @Override
-    public void characters(char[] ch, int start, int length) throws SAXException {
-        super.characters(ch, start, length);
-    }
-
-    @Override
-    public void warning(SAXParseException e) throws SAXException {
-        super.warning(e);
-    }
-
-    @Override
-    public void error(SAXParseException e) throws SAXException {
-        System.out.println("Error at: " + e.getLineNumber() + ":" + e.getColumnNumber());
-        super.error(e);
-    }
-
-    @Override
-    public void fatalError(SAXParseException e) throws SAXException {
-        System.out.println("Fatal Error at: " + e.getLineNumber() + ":" + e.getColumnNumber());
-        super.fatalError(e);
+    private void onOpenTagFound(String tag) {
+        System.out.println("Open tag found: " + tag);
     }
 }
