@@ -10,6 +10,7 @@ import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.io.File;
 
 public class MainScreen {
 
@@ -153,7 +154,9 @@ public class MainScreen {
 		fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Arquivo HTML", "html"));
 		int actionResult = fileChooser.showOpenDialog(frame.getParent());
 		if (actionResult == JFileChooser.APPROVE_OPTION) {
-			htmlParser.setHtmlFile(fileChooser.getSelectedFile());
+		    File selectedFile = fileChooser.getSelectedFile();
+		    filePathInput.setText(selectedFile.getAbsolutePath());
+			htmlParser.setHtmlFile(selectedFile);
 		}
 	}
 
