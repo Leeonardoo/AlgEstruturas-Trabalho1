@@ -2,6 +2,7 @@ package com.github.leeonardoo.algestruturas.html;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import javax.xml.parsers.SAXParser;
@@ -76,5 +77,22 @@ public class HTMLParser extends DefaultHandler {
     @Override
     public void characters(char[] ch, int start, int length) throws SAXException {
         super.characters(ch, start, length);
+    }
+
+    @Override
+    public void warning(SAXParseException e) throws SAXException {
+        super.warning(e);
+    }
+
+    @Override
+    public void error(SAXParseException e) throws SAXException {
+        System.out.println("Error at: " + e.getLineNumber() + ":" + e.getColumnNumber());
+        super.error(e);
+    }
+
+    @Override
+    public void fatalError(SAXParseException e) throws SAXException {
+        System.out.println("Fatal Error at: " + e.getLineNumber() + ":" + e.getColumnNumber());
+        super.fatalError(e);
     }
 }
