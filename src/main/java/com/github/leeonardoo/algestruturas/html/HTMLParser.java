@@ -103,7 +103,7 @@ public class HTMLParser {
 
     private void onOpenTagFound(String tag) {
         System.out.println("Open tag found: " + tag);
-
+    }
 
     private void onCloseTagFound(String tag) {
         System.out.println("Close tag found: " + tag);
