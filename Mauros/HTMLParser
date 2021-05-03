@@ -1,0 +1,287 @@
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+
+import javax.swing.text.html.HTMLEditorKit.ParserCallback;
+
+
+public class HTMLParser <t> {
+	public ListaEncadeada lista;
+	public ListaEncadeada lista1;
+    private File htmlFile;
+  //  private final ParserCallback callback;
+    
+
+    //Tags that close with '/>' or doesn't ever close (i.e <img src="https://somewebsite.com/someimage.jpg">)
+    private static final String[] singletonTags = {"meta", "base", "br", "col", "command", "embed", "hr", "img", "input", "link", "param", "source", "!DOCTYPE"};
+
+    public HTMLParser() {
+       // this.callback = callback;
+    	lista = new ListaEncadeada ();
+		lista = null;
+    }
+
+    public void setHtmlFile(File newFile) {
+        htmlFile = newFile;
+    }
+
+    public void parseFile() {
+        StringBuilder contentBuilder = new StringBuilder();
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(htmlFile));
+            String str;
+
+            while ((str = reader.readLine()) != null) {
+                contentBuilder.append(str);
+            }
+
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            
+            //callback.onError(e.getMessage());
+        } catch (NullPointerException e) {
+           // callback.onError("Selecione um arquivo primeiro!");
+        }
+
+        try {
+            handleString(contentBuilder.toString());
+        } catch (Exception e) {
+           // callback.onError(e.getMessage());
+        }
+    }
+
+    private void handleString(String htmlText) {
+        char[] htmlChars = htmlText.toCharArray();
+
+        for (int i = 0; i < htmlChars.length - 1; i++) {
+            //Iterate for possible tags
+            if (htmlChars[i] == '<') {
+                StringBuilder tagBuilder = new StringBuilder();
+
+                //Maybe an opening tag was found @[i]
+                openLoop:
+                for (int j = i + 1; j < htmlChars.length - 1; j++) {
+                    if (htmlChars[j] != '/' && htmlChars[j] != ' ' && htmlChars[j] != '>') {
+                        //Now we know it isn't a closing tag
+                        tagBuilder.append(htmlChars[j]);
+                    } else if (htmlChars[j] == '/') {
+                        StringBuilder closeTagBuilder = new StringBuilder();
+                        for (int k = j + 1; k < htmlChars.length; k++) {
+                            if (htmlChars[k] == '>') {
+                                onCloseTagFound(closeTagBuilder.toString());
+                                break openLoop;
+                            } else {
+                                closeTagBuilder.append(htmlChars[k]);
+                            }
+                        }
+                    } else {
+                        String tag = tagBuilder.toString();
+
+                        boolean singletonFound = false;
+
+                        for (String singletonTag : singletonTags) {
+                            if (singletonTag.equals(tag)) {
+                                singletonFound = true;
+                                break;
+                            }
+                        }
+
+                        onOpenTagFound(tagBuilder.toString());
+
+                        for (int l = j; l < htmlChars.length; l++) {
+                            if (l + 2 < htmlChars.length - 1 && (htmlChars[l + 1] == '/' && htmlChars[l + 2] == '>' || htmlChars[l + 1] == '>')) {
+                                if (singletonFound) {
+                                    onSingletonCloseTagFound(tag);
+                                } else {
+                                    //Error
+                                }
+                                break openLoop;
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    private void onOpenTagFound(String tag) {
+        System.out.println("Open tag found: " + tag);
+        this.pushAbre(tag);
+        
+    }
+
+    private void onCloseTagFound(String tag) {
+        System.out.println("Close tag found: " + tag);
+        this.pushFecha(tag);
+    }
+
+    private void onSingletonCloseTagFound(String tag) {
+        System.out.println("singleton Close tag found: " + tag);
+    }
+    
+    public String contadorAberto () {
+    	ListaEncadeada p = this.lista;
+    	ListaEncadeada x = this.lista;
+    
+    	String msg ="";
+    	
+    	int cont = 0;
+    	
+    	while (x != null) {
+    		
+    	while (p != null) {
+    		
+    		if(p.getInfo().equals(x.getInfo())) {
+    			cont++;
+    			
+    		}
+    	p = p.getLista();
+    	
+    	}
+    	System.out.println(x.getInfo() + " " + cont);
+    	cont=0;
+    	x = x.getLista();
+    	p = lista;
+    	
+    	
+    	
+    	}
+    	return msg;
+    	
+    	
+    }
+	
+	public void pushAbre (String info) {
+		ListaEncadeada <t> novo  = new  ListaEncadeada <>() ;
+		novo.setInfo(info);
+		novo.setLista(lista);
+		this.lista = novo;
+	}
+	
+	public String popAbre() {
+		ListaEncadeada <t> p;
+		p = lista;
+		lista = lista.getLista();
+		return p.getInfo();
+	}
+	
+	public String peekAbre () {
+		if (this.estaVaziaAbre()) {
+			//throw new PilhaVaziaException();
+		}
+		return lista.getInfo();
+	}
+	
+	public boolean estaVaziaAbre() {
+		if (lista == null) {
+			return true;
+		} else {
+		return false;
+		}
+	}
+	
+	public void liberarAbre () {
+		while (!estaVaziaAbre()) {
+			popAbre();
+		}
+	}
+	
+	public String toStringAbre () {
+		String resultado = "";
+		ListaEncadeada <t> p = lista;
+		
+		while (p != null) {
+			
+			if (p != lista) {
+				resultado += ",";
+			}
+			resultado += p.getInfo().toString();
+			p = p.getLista();
+		}
+		return resultado;
+	}
+	
+	public void pushFecha (String info) {
+		ListaEncadeada <t> novo  = new  ListaEncadeada <>() ;
+		novo.setInfo(info);
+		novo.setLista(lista1);
+		this.lista1 = novo;
+	}
+	
+	public String popFecha() {
+		ListaEncadeada <t> p;
+		p = lista1;
+		lista1 = lista1.getLista();
+		return p.getInfo();
+	}
+	
+	public String peekFecha () {
+		if (this.estaVaziaFecha()) {
+			//throw new PilhaVaziaException();
+		}
+		return lista1.getInfo();
+	}
+	
+	public boolean estaVaziaFecha() {
+		if (lista1 == null) {
+			return true;
+		} else {
+		return false;
+		}
+	}
+	
+	public void liberarFecha () {
+		while (!estaVaziaFecha()) {
+			popFecha();
+		}
+	}
+	
+	public String toStringFecha () {
+		String resultado = "";
+		ListaEncadeada <t> p = lista1;
+		
+		while (p != null) {
+			
+			if (p != lista1) {
+				resultado += ",";
+			}
+			resultado += p.getInfo().toString();
+			p = p.getLista();
+		}
+		return resultado;
+	}
+	
+	public String contadorFechado () {
+    	ListaEncadeada p = this.lista;
+    	ListaEncadeada x = this.lista;
+    
+    	String msg ="";
+    	
+    	int cont = 0;
+    	
+    	while (x != null) {
+    		
+    	while (p != null) {
+    		
+    		if(p.getInfo().equals(x.getInfo())) {
+    			cont++;
+    			
+    		}
+    	p = p.getLista();
+    	
+    	}
+    	System.out.println(x.getInfo() + " " + cont);
+    	cont=0;
+    	x = x.getLista();
+    	p = lista;
+
+    	}
+    	return msg;
+    	
+    	
+    }
+
+}
