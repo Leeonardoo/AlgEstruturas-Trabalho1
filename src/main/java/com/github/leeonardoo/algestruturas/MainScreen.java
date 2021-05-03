@@ -148,6 +148,7 @@ public class MainScreen implements ParserCallback {
 		analyzeFileButton.addActionListener(e -> {
 			clearView();
 			htmlParser.parseFile();
+			//System.out.println(htmlParser.openStack.toString());
 		});
 	}
 

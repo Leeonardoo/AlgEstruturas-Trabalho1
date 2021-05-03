@@ -116,7 +116,10 @@ public class ListaEncadeada<T> {
             proximo = proximo.getProximo();
         }
 
-        elements.deleteCharAt(elements.lastIndexOf(","));
+        int index = (elements.lastIndexOf(","));
+        if (index > 0) {
+            elements.deleteCharAt(index);
+        }
         return elements.toString();
     }
 }

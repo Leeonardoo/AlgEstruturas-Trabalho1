@@ -1,5 +1,7 @@
 package com.github.leeonardoo.algestruturas.html;
 
+import com.github.leeonardoo.algestruturas.data.PilhaLista;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -13,6 +15,8 @@ public class HTMLParser {
     //Tags that close with '/>' or doesn't ever close (i.e <img src="https://somewebsite.com/someimage.jpg">)
     private static final String[] singletonTags = {"meta", "base", "br", "col", "command", "embed", "hr", "img", "input", "link", "param", "source", "!DOCTYPE"};
 
+    private final PilhaLista<String> openStack = new PilhaLista<>();
+
     public HTMLParser(ParserCallback callback) {
         this.callback = callback;
     }
@@ -22,6 +26,8 @@ public class HTMLParser {
     }
 
     public void parseFile() {
+        openStack.liberar();
+
         StringBuilder contentBuilder = new StringBuilder();
         try {
             BufferedReader reader = new BufferedReader(new FileReader(htmlFile));
@@ -50,15 +56,12 @@ public class HTMLParser {
         char[] htmlChars = htmlText.toCharArray();
 
         for (int i = 0; i < htmlChars.length - 1; i++) {
-            //Iterate for possible tags
             if (htmlChars[i] == '<') {
                 StringBuilder tagBuilder = new StringBuilder();
 
-                //Maybe an opening tag was found @[i]
                 openLoop:
-                for (int j = i + 1; j < htmlChars.length - 1; j++) {
+                for (int j = i + 1; j < htmlChars.length; j++) {
                     if (htmlChars[j] != '/' && htmlChars[j] != ' ' && htmlChars[j] != '>') {
-                        //Now we know it isn't a closing tag
                         tagBuilder.append(htmlChars[j]);
                     } else if (htmlChars[j] == '/') {
                         StringBuilder closeTagBuilder = new StringBuilder();
@@ -73,7 +76,7 @@ public class HTMLParser {
                     } else {
                         String tag = tagBuilder.toString();
 
-                        boolean singletonFound = false;
+                        boolean singletonFound = isSingletonTag(tag);
 
                         for (String singletonTag : singletonTags) {
                             if (singletonTag.equals(tag)) {
@@ -82,14 +85,18 @@ public class HTMLParser {
                             }
                         }
 
-                        onOpenTagFound(tagBuilder.toString());
+                        if (singletonFound) {
+                            onOpenSingletonTagFound(tag);
+                        } else {
+                            onOpenTagFound(tag);
+                        }
 
                         for (int l = j; l < htmlChars.length; l++) {
-                            if (l + 2 < htmlChars.length - 1 && (htmlChars[l + 1] == '/' && htmlChars[l + 2] == '>' || htmlChars[l + 1] == '>')) {
+                            if ((l + 1 < htmlChars.length && htmlChars[l + 1] == '>') || (l + 2 < htmlChars.length && (htmlChars[l + 1] == '/' && htmlChars[l + 2] == '>'))) {
                                 if (singletonFound) {
                                     onSingletonCloseTagFound(tag);
                                 } else {
-                                    //Error
+
                                 }
                                 break openLoop;
                             }
@@ -101,15 +108,46 @@ public class HTMLParser {
         }
     }
 
+    private boolean isSingletonTag(String tag) {
+        boolean singletonFound = false;
+
+        for (String singletonTag : singletonTags) {
+            if (singletonTag.equals(tag)) {
+                singletonFound = true;
+                break;
+            }
+        }
+
+        return singletonFound;
+    }
+
     private void onOpenTagFound(String tag) {
-        System.out.println("Open tag found: " + tag);
+        openStack.push(tag);
+    }
+
+    private void onOpenSingletonTagFound(String tag) {
+        openStack.push(tag);
     }
 
     private void onCloseTagFound(String tag) {
-        System.out.println("Close tag found: " + tag);
+        if (!openStack.peek().equals(tag)) {
+            if (isSingletonTag(tag)) {
+                throw new IllegalStateException("Foi encontrada a tag de fechamento " + tag + " enquanto a tag esperada era '>' ou '/>'");
+            } else {
+                throw new IllegalStateException("Foi encontrada a tag de fechamento " + tag + " enquanto a tag esperada era " + openStack.peek());
+            }
+        }
+        openStack.pop();
     }
 
     private void onSingletonCloseTagFound(String tag) {
-        System.out.println("singleton Close tag found: " + tag);
+        if (!openStack.peek().equals(tag)) {
+            if (isSingletonTag(openStack.peek())) {
+                throw new IllegalStateException("Foi encontrada a tag de fechamento " + tag + " enquanto a tag esperada era '>' ou '/>'");
+            } else {
+                throw new IllegalStateException("Foi encontrada a tag de fechamento " + tag + " enquanto a tag esperada era " + openStack.peek());
+            }
+        }
+        openStack.pop();
     }
 }
