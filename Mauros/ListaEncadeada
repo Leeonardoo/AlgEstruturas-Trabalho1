@@ -1,0 +1,28 @@
+
+public class  ListaEncadeada <t>  {
+	ListaEncadeada <t> anterior;
+	ListaEncadeada <t> Lista;
+	private String info;
+	
+	
+	public ListaEncadeada<t> getLista() {
+		return Lista;
+	}
+	public void setLista (ListaEncadeada <t> lista) {
+		Lista = lista;
+	}
+	public String  getInfo() {
+		return info;
+	}
+	public void setInfo(String info) {
+		this.info = info;
+	}
+	public ListaEncadeada <t> getAnterior () {
+		return anterior;
+	}
+	
+	public void setAnterior (ListaEncadeada <t> anterior) {
+		this.anterior = anterior;
+	}
+	
+}
