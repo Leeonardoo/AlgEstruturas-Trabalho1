@@ -1,5 +1,6 @@
 package com.github.leeonardoo.algestruturas;
 
+import com.github.leeonardoo.algestruturas.data.ListaEstaticaTag;
 import com.github.leeonardoo.algestruturas.html.HTMLParser;
 import com.github.leeonardoo.algestruturas.html.ParserCallback;
 
@@ -15,17 +16,17 @@ import java.io.File;
 
 public class MainScreen implements ParserCallback {
 
-	private final HTMLParser htmlParser = new HTMLParser(this);
+    private final HTMLParser htmlParser = new HTMLParser(this);
 
     private JFrame frame;
     private JTextPane statusTextArea;
     private JTable tagsTable;
     private JLabel filePathInputLabel;
-	private JTextField filePathInput;
-	private JButton analyzeFileButton;
-	private JButton selectFileButton;
+    private JTextField filePathInput;
+    private JButton analyzeFileButton;
+    private JButton selectFileButton;
 
-	private String lastDir;
+    private String lastDir;
 
     /**
      * Create the application.
@@ -56,7 +57,7 @@ public class MainScreen implements ParserCallback {
 
         filePathInputLabel = new JLabel("Arquivo:");
 
-		filePathInput = new JTextField();
+        filePathInput = new JTextField();
         filePathInput.setPreferredSize(new Dimension(7, 28));
         filePathInput.setSize(new Dimension(0, 28));
         filePathInput.setMinimumSize(new Dimension(7, 28));
@@ -73,7 +74,7 @@ public class MainScreen implements ParserCallback {
         statusTextArea = new JTextPane();
         statusTextArea.setEditable(false);
 
-		selectFileButton = new JButton("");
+        selectFileButton = new JButton("");
         selectFileButton.setSize(new Dimension(28, 28));
         selectFileButton.setMinimumSize(new Dimension(28, 28));
         selectFileButton.setMaximumSize(new Dimension(28, 28));
@@ -120,61 +121,70 @@ public class MainScreen implements ParserCallback {
 
         tagsTable = new JTable();
         scrollPane.setViewportView(tagsTable);
-        tagsTable.setCellEditor(null);
-        tagsTable.setModel(new DefaultTableModel(
-                new Object[][]{
-                        new String[]{
-                                "NewText", "NewText"
-                        }
-                },
-                new String[]{
-                        "Tag", "Número de ocorrências"
-                }
-        ) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        });
-        tagsTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         frame.getContentPane().setLayout(groupLayout);
 
         setListeners();
     }
 
     private void setListeners() {
-		selectFileButton.addActionListener(e -> handleSelectFile());
+        selectFileButton.addActionListener(e -> handleSelectFile());
 
-		analyzeFileButton.addActionListener(e -> {
-			clearView();
-			htmlParser.parseFile();
-			//System.out.println(htmlParser.openStack.toString());
-		});
-	}
+        analyzeFileButton.addActionListener(e -> {
+            clearView();
+            htmlParser.parseFile();
+            //System.out.println(htmlParser.openStack.toString());
+        });
+    }
 
-	private void handleSelectFile() {
-		JFileChooser fileChooser = new JFileChooser();
-		fileChooser.removeChoosableFileFilter(fileChooser.getAcceptAllFileFilter());
-		fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Arquivo HTML", "html"));
-		if (lastDir != null) {
-		    fileChooser.setCurrentDirectory(new File(lastDir));
+    private void handleSelectFile() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.removeChoosableFileFilter(fileChooser.getAcceptAllFileFilter());
+        fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Arquivo HTML", "html"));
+        if (lastDir != null) {
+            fileChooser.setCurrentDirectory(new File(lastDir));
         }
-		int actionResult = fileChooser.showOpenDialog(frame.getParent());
-		if (actionResult == JFileChooser.APPROVE_OPTION) {
-		    File selectedFile = fileChooser.getSelectedFile();
-		    lastDir = selectedFile.getAbsoluteFile().getParent();
-		    filePathInput.setText(selectedFile.getAbsolutePath());
-			htmlParser.setHtmlFile(selectedFile);
-		}
-	}
+        int actionResult = fileChooser.showOpenDialog(frame.getParent());
+        if (actionResult == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = fileChooser.getSelectedFile();
+            lastDir = selectedFile.getAbsoluteFile().getParent();
+            filePathInput.setText(selectedFile.getAbsolutePath());
+            htmlParser.setHtmlFile(selectedFile);
+        }
+    }
 
-	private void clearView() {
-    	statusTextArea.setText("");
+    private void clearView() {
+        statusTextArea.setText("");
         tagsTable.setModel(new DefaultTableModel(new Object[][]{new String[]{}}, new String[]{}));
-	}
+    }
 
     @Override
     public void onError(String msg) {
         statusTextArea.setText(msg);
+    }
+
+    @Override
+    public void onSuccess(ListaEstaticaTag listaTags) {
+        String[][] tags = new String[listaTags.getTamanho() - 1][2];
+
+        for (int i = 0; i < listaTags.getTamanho() - 1; i++) {
+            String current = listaTags.obterElemento(i);
+            int newIndex = current.indexOf('!');
+            tags[i][0] = current.substring(0, newIndex);
+            tags[i][1] = current.substring(newIndex + 1);
+        }
+
+        tagsTable.setCellEditor(null);
+        tagsTable.setModel(new DefaultTableModel(
+                tags,
+                new String[]{
+                        "Tag", "Número de ocorrências"
+                }
+        ){
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        });
+        tagsTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
     }
 }

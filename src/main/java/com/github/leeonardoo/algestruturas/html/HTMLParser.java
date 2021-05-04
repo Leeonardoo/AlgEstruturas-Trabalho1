@@ -1,5 +1,6 @@
 package com.github.leeonardoo.algestruturas.html;
 
+import com.github.leeonardoo.algestruturas.data.ListaEstaticaTag;
 import com.github.leeonardoo.algestruturas.data.PilhaLista;
 
 import java.io.BufferedReader;
@@ -17,6 +18,8 @@ public class HTMLParser {
 
     private final PilhaLista<String> openStack = new PilhaLista<>();
 
+    ListaEstaticaTag tags = new ListaEstaticaTag();
+
     public HTMLParser(ParserCallback callback) {
         this.callback = callback;
     }
@@ -27,6 +30,7 @@ public class HTMLParser {
 
     public void parseFile() {
         openStack.liberar();
+        tags.liberar();
 
         StringBuilder contentBuilder = new StringBuilder();
         try {
@@ -47,7 +51,9 @@ public class HTMLParser {
 
         try {
             handleString(contentBuilder.toString());
+            callback.onSuccess(tags);
         } catch (Exception e) {
+            e.printStackTrace();
             callback.onError(e.getMessage());
         }
     }
@@ -138,6 +144,7 @@ public class HTMLParser {
             }
         }
         openStack.pop();
+        insert(tag);
     }
 
     private void onSingletonCloseTagFound(String tag) {
@@ -149,5 +156,21 @@ public class HTMLParser {
             }
         }
         openStack.pop();
+        insert(tag);
+    }
+
+    private void insert(String tag) {
+        int index = tags.buscarIndexInicio(tag);
+
+        if (index != -1) {
+            String current = tags.obterElemento(index);
+            int newIndex = current.indexOf('!');
+            int count = Integer.parseInt(current.substring(newIndex + 1));
+            count++;
+
+            tags.inserirEm(index, current.substring(0, newIndex) + "!" + count);
+        } else {
+            tags.inserir(tag + "!1");
+        }
     }
 }
