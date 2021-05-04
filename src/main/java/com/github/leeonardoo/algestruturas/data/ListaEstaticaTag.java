@@ -1,28 +1,25 @@
 package com.github.leeonardoo.algestruturas.data;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.github.leeonardoo.algestruturas.TagCount;
 
-@SuppressWarnings("unchecked")
 public class ListaEstaticaTag {
 
-    private String[] info = new String[10];
+    private TagCount[] info = new TagCount[10];
     private int tamanho = 0;
 
-    @SuppressWarnings("unchecked")
     private void redimensionar() {
-        String[] oldArr = info;
-        info = new String[oldArr.length + 10];
+        TagCount[] oldArr = info;
+        info = new TagCount[oldArr.length + 10];
         for (int i = 0; i < oldArr.length; i++) {
             info[i] = oldArr[i];
         }
     }
 
-    public void inserir(String item) {
+    public void inserir(TagCount item) {
         if (tamanho == info.length) {
             redimensionar();
         }
-        //Zero-indexed
+
         info[tamanho] = item;
         tamanho++;
     }
@@ -31,7 +28,7 @@ public class ListaEstaticaTag {
         System.out.println(this.toString());
     }
 
-    public int buscar(String item) {
+    public int buscar(TagCount item) {
         for (int i = 0; i < getTamanho() - 1; i++) {
             if (obterElemento(i).equals(item)) {
                 return i;
@@ -40,9 +37,9 @@ public class ListaEstaticaTag {
         return -1;
     }
 
-    public int buscarIndexInicio(String inicio) {
+    public int buscarIndexTag(String tag) {
         for (int i = 0; i < getTamanho(); i++) {
-            if (obterElemento(i).startsWith(inicio)) {
+            if (obterElemento(i).getTag().equals(tag)) {
                 return i;
             }
         }
@@ -50,15 +47,15 @@ public class ListaEstaticaTag {
         return -1;
     }
 
-    public void inserirEm(int index, String s) {
+    public void inserirEm(int index, TagCount tagCount) {
         if (tamanho == info.length) {
             redimensionar();
         }
 
-        info[index] = s;
+        info[index] = tagCount;
     }
 
-    public void retirar(String item) {
+    public void retirar(TagCount item) {
         int index = buscar(item);
 
         if (index != -1) {
@@ -69,13 +66,12 @@ public class ListaEstaticaTag {
         }
     }
 
-    @SuppressWarnings("unchecked")
     public void liberar() {
-        info = new String[10];
+        info = new TagCount[10];
         tamanho = 0;
     }
 
-    public String obterElemento(int position) {
+    public TagCount obterElemento(int position) {
         //Zero-indexed
         if (position > getTamanho() - 1 || position < 0) {
             throw new IndexOutOfBoundsException("Trying to access an index out the bounds of the current items on the list! Requested index was " + position + " while the size is " + getTamanho());
@@ -93,7 +89,7 @@ public class ListaEstaticaTag {
 
     public void inverter() {
         for (int i = 0; i < getTamanho() / 2; i++) {
-            String temp = info[i];
+            TagCount temp = info[i];
             int farIndex = getTamanho() - 1 - i; //Zero-indexed
             info[i] = info[farIndex];
             info[farIndex] = temp;

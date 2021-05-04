@@ -132,7 +132,6 @@ public class MainScreen implements ParserCallback {
         analyzeFileButton.addActionListener(e -> {
             clearView();
             htmlParser.parseFile();
-            //System.out.println(htmlParser.openStack.toString());
         });
     }
 
@@ -164,22 +163,19 @@ public class MainScreen implements ParserCallback {
 
     @Override
     public void onSuccess(ListaEstaticaTag listaTags) {
-        String[][] tags = new String[listaTags.getTamanho() - 1][2];
+        String[][] tags = new String[listaTags.getTamanho()][2];
 
-        for (int i = 0; i < listaTags.getTamanho() - 1; i++) {
-            String current = listaTags.obterElemento(i);
-            int newIndex = current.indexOf('!');
-            tags[i][0] = current.substring(0, newIndex);
-            tags[i][1] = current.substring(newIndex + 1);
+        for (int i = 0; i < listaTags.getTamanho(); i++) {
+            TagCount tagCount = listaTags.obterElemento(i);
+
+            tags[i][0] = tagCount.getTag();
+            tags[i][1] = String.valueOf(tagCount.getCount());
         }
 
         tagsTable.setCellEditor(null);
-        tagsTable.setModel(new DefaultTableModel(
-                tags,
-                new String[]{
-                        "Tag", "Número de ocorrências"
-                }
-        ){
+        tagsTable.setModel(new DefaultTableModel(tags, new String[]{
+                "Tag", "Número de ocorrências"
+        }) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;

@@ -1,5 +1,6 @@
 package com.github.leeonardoo.algestruturas.html;
 
+import com.github.leeonardoo.algestruturas.TagCount;
 import com.github.leeonardoo.algestruturas.data.ListaEstaticaTag;
 import com.github.leeonardoo.algestruturas.data.PilhaLista;
 
@@ -160,17 +161,15 @@ public class HTMLParser {
     }
 
     private void insert(String tag) {
-        int index = tags.buscarIndexInicio(tag);
+        int index = tags.buscarIndexTag(tag);
 
         if (index != -1) {
-            String current = tags.obterElemento(index);
-            int newIndex = current.indexOf('!');
-            int count = Integer.parseInt(current.substring(newIndex + 1));
-            count++;
+            TagCount tagCount = tags.obterElemento(index);
+            tagCount.setCount(tagCount.getCount() + 1);
 
-            tags.inserirEm(index, current.substring(0, newIndex) + "!" + count);
+            tags.inserirEm(index, tagCount);
         } else {
-            tags.inserir(tag + "!1");
+            tags.inserir(new TagCount(tag, 1));
         }
     }
 }
