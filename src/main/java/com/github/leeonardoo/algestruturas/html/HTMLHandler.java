@@ -13,7 +13,6 @@ public class HTMLHandler {
     private File file;
     private final HandlerCallback callback;
 
-    //Tags that close with '/>' or doesn't ever close (i.e <img src="https://somewebsite.com/someimage.jpg">)
     private static final String[] singletonTags = {"meta", "base", "br", "col", "command", "embed", "hr", "img", "input", "link", "param", "source", "!DOCTYPE"};
 
     private final PilhaLista<String> openStack = new PilhaLista<>();
@@ -57,20 +56,20 @@ public class HTMLHandler {
     private void handleTags(String htmlText) {
         char[] htmlChars = htmlText.toCharArray();
 
-        for (int i = 0; i < htmlChars.length - 1; i++) {
-            if (htmlChars[i] == '<') {
+        for (int c = 0; c < htmlChars.length - 1; c++) {
+            if (htmlChars[c] == '<') {
                 StringBuilder tagBuilder = new StringBuilder();
 
-                openLoop:
-                for (int j = i + 1; j < htmlChars.length; j++) {
-                    if (htmlChars[j] != '/' && htmlChars[j] != ' ' && htmlChars[j] != '>') {
-                        tagBuilder.append(htmlChars[j]);
-                    } else if (htmlChars[j] == '/') {
+                tagLoop:
+                for (int i = c + 1; i < htmlChars.length; i++) {
+                    if (htmlChars[i] != '/' && htmlChars[i] != ' ' && htmlChars[i] != '>') {
+                        tagBuilder.append(htmlChars[i]);
+                    } else if (htmlChars[i] == '/') {
                         StringBuilder closeTagBuilder = new StringBuilder();
-                        for (int k = j + 1; k < htmlChars.length; k++) {
+                        for (int k = i + 1; k < htmlChars.length; k++) {
                             if (htmlChars[k] == '>') {
                                 onCloseTag(closeTagBuilder.toString());
-                                break openLoop;
+                                break tagLoop;
                             } else {
                                 closeTagBuilder.append(htmlChars[k]);
                             }
@@ -80,27 +79,18 @@ public class HTMLHandler {
 
                         boolean isSingleton = isSingletonTag(tag);
 
-                        for (String singletonTag : singletonTags) {
-                            if (singletonTag.equals(tag)) {
-                                isSingleton = true;
-                                break;
-                            }
-                        }
-
                         if (isSingleton) {
                             onSingletonOpen(tag);
                         } else {
                             onTagOpen(tag);
                         }
 
-                        for (int l = j; l < htmlChars.length; l++) {
-                            if ((l + 1 < htmlChars.length && htmlChars[l + 1] == '>') || (l + 2 < htmlChars.length && (htmlChars[l + 1] == '/' && htmlChars[l + 2] == '>'))) {
+                        for (int j = i; j < htmlChars.length; j++) {
+                            if ((j + 1 < htmlChars.length && htmlChars[j + 1] == '>') || (j + 2 < htmlChars.length && (htmlChars[j + 1] == '/' && htmlChars[j + 2] == '>'))) {
                                 if (isSingleton) {
                                     onCloseSingleton(tag);
-                                } else {
-
                                 }
-                                break openLoop;
+                                break tagLoop;
                             }
                         }
                         break;
