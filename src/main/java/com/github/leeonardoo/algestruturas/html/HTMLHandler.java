@@ -7,12 +7,11 @@ import com.github.leeonardoo.algestruturas.data.PilhaLista;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.IOException;
 
-public class HTMLParser {
+public class HTMLHandler {
 
-    private File htmlFile;
-    private final ParserCallback callback;
+    private File file;
+    private final HandlerCallback callback;
 
     //Tags that close with '/>' or doesn't ever close (i.e <img src="https://somewebsite.com/someimage.jpg">)
     private static final String[] singletonTags = {"meta", "base", "br", "col", "command", "embed", "hr", "img", "input", "link", "param", "source", "!DOCTYPE"};
@@ -21,21 +20,21 @@ public class HTMLParser {
 
     ListaEstaticaTag tags = new ListaEstaticaTag();
 
-    public HTMLParser(ParserCallback callback) {
+    public HTMLHandler(HandlerCallback callback) {
         this.callback = callback;
     }
 
-    public void setHtmlFile(File newFile) {
-        htmlFile = newFile;
+    public void setFile(File newFile) {
+        file = newFile;
     }
 
-    public void parseFile() {
+    public void handleFile() {
         openStack.liberar();
         tags.liberar();
 
         StringBuilder contentBuilder = new StringBuilder();
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(htmlFile));
+            BufferedReader reader = new BufferedReader(new FileReader(file));
             String str;
 
             while ((str = reader.readLine()) != null) {
@@ -43,23 +42,19 @@ public class HTMLParser {
             }
 
             reader.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-            callback.onError(e.getMessage());
+
+            handleTags(contentBuilder.toString());
+            callback.onSuccess(tags);
+
         } catch (NullPointerException e) {
             callback.onError("Selecione um arquivo primeiro!");
-        }
-
-        try {
-            handleString(contentBuilder.toString());
-            callback.onSuccess(tags);
         } catch (Exception e) {
             e.printStackTrace();
             callback.onError(e.getMessage());
         }
     }
 
-    private void handleString(String htmlText) {
+    private void handleTags(String htmlText) {
         char[] htmlChars = htmlText.toCharArray();
 
         for (int i = 0; i < htmlChars.length - 1; i++) {
@@ -74,7 +69,7 @@ public class HTMLParser {
                         StringBuilder closeTagBuilder = new StringBuilder();
                         for (int k = j + 1; k < htmlChars.length; k++) {
                             if (htmlChars[k] == '>') {
-                                onCloseTagFound(closeTagBuilder.toString());
+                                onCloseTag(closeTagBuilder.toString());
                                 break openLoop;
                             } else {
                                 closeTagBuilder.append(htmlChars[k]);
@@ -83,25 +78,25 @@ public class HTMLParser {
                     } else {
                         String tag = tagBuilder.toString();
 
-                        boolean singletonFound = isSingletonTag(tag);
+                        boolean isSingleton = isSingletonTag(tag);
 
                         for (String singletonTag : singletonTags) {
                             if (singletonTag.equals(tag)) {
-                                singletonFound = true;
+                                isSingleton = true;
                                 break;
                             }
                         }
 
-                        if (singletonFound) {
-                            onOpenSingletonTagFound(tag);
+                        if (isSingleton) {
+                            onSingletonOpen(tag);
                         } else {
-                            onOpenTagFound(tag);
+                            onTagOpen(tag);
                         }
 
                         for (int l = j; l < htmlChars.length; l++) {
                             if ((l + 1 < htmlChars.length && htmlChars[l + 1] == '>') || (l + 2 < htmlChars.length && (htmlChars[l + 1] == '/' && htmlChars[l + 2] == '>'))) {
-                                if (singletonFound) {
-                                    onSingletonCloseTagFound(tag);
+                                if (isSingleton) {
+                                    onCloseSingleton(tag);
                                 } else {
 
                                 }
@@ -128,15 +123,15 @@ public class HTMLParser {
         return singletonFound;
     }
 
-    private void onOpenTagFound(String tag) {
+    private void onTagOpen(String tag) {
         openStack.push(tag);
     }
 
-    private void onOpenSingletonTagFound(String tag) {
+    private void onSingletonOpen(String tag) {
         openStack.push(tag);
     }
 
-    private void onCloseTagFound(String tag) {
+    private void onCloseTag(String tag) {
         if (!openStack.peek().equals(tag)) {
             if (isSingletonTag(tag)) {
                 throw new IllegalStateException("Foi encontrada a tag de fechamento " + tag + " enquanto a tag esperada era '>' ou '/>'");
@@ -148,7 +143,7 @@ public class HTMLParser {
         insert(tag);
     }
 
-    private void onSingletonCloseTagFound(String tag) {
+    private void onCloseSingleton(String tag) {
         if (!openStack.peek().equals(tag)) {
             if (isSingletonTag(openStack.peek())) {
                 throw new IllegalStateException("Foi encontrada a tag de fechamento " + tag + " enquanto a tag esperada era '>' ou '/>'");

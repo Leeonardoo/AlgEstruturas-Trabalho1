@@ -1,8 +1,8 @@
 package com.github.leeonardoo.algestruturas;
 
 import com.github.leeonardoo.algestruturas.data.ListaEstaticaTag;
-import com.github.leeonardoo.algestruturas.html.HTMLParser;
-import com.github.leeonardoo.algestruturas.html.ParserCallback;
+import com.github.leeonardoo.algestruturas.html.HTMLHandler;
+import com.github.leeonardoo.algestruturas.html.HandlerCallback;
 
 import javax.swing.*;
 import javax.swing.GroupLayout.Alignment;
@@ -14,9 +14,9 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.io.File;
 
-public class MainScreen implements ParserCallback {
+public class MainScreen implements HandlerCallback {
 
-    private final HTMLParser htmlParser = new HTMLParser(this);
+    private final HTMLHandler htmlParser = new HTMLHandler(this);
 
     private JFrame frame;
     private JTextPane statusTextArea;
@@ -131,7 +131,7 @@ public class MainScreen implements ParserCallback {
 
         analyzeFileButton.addActionListener(e -> {
             clearView();
-            htmlParser.parseFile();
+            htmlParser.handleFile();
         });
     }
 
@@ -147,7 +147,7 @@ public class MainScreen implements ParserCallback {
             File selectedFile = fileChooser.getSelectedFile();
             lastDir = selectedFile.getAbsoluteFile().getParent();
             filePathInput.setText(selectedFile.getAbsolutePath());
-            htmlParser.setHtmlFile(selectedFile);
+            htmlParser.setFile(selectedFile);
         }
     }
 
